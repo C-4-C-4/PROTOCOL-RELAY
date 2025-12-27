@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 // ⚠️ 注意：这里以后要替换成你在 EdgeOne 上绑定的实际加速域名
 // 目前我们先用一个占位符，不影响界面预览
-const EDGE_DOMAIN = "https://git.yourdomain.com";
+const EDGE_DOMAIN = "https://git.007icu.eu.org";
 
 export default function ProtocolTerminal() {
   const [inputUrl, setInputUrl] = useState('');
