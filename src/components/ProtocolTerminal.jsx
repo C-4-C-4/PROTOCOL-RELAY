@@ -1,12 +1,11 @@
 import { useState } from 'react';
 
-// ⚠️ 注意：这里以后要替换成你在 EdgeOne 上绑定的实际加速域名
-// 目前我们先用一个占位符，不影响界面预览
+// ⚠️ 请确保这里是你之前配置好的加速域名
 const EDGE_DOMAIN = "https://git.007icu.eu.org";
 
 export default function ProtocolTerminal() {
   const [inputUrl, setInputUrl] = useState('');
-  const [status, setStatus] = useState('IDLE'); // 状态：空闲(IDLE), 处理中(PROCESSING), 已批准(APPROVED)
+  const [status, setStatus] = useState('IDLE'); 
   const [result, setResult] = useState(null);
   
   const handleProcess = (e) => {
@@ -15,30 +14,76 @@ export default function ProtocolTerminal() {
 
     setStatus('PROCESSING');
 
-    // 模拟“正在连接卫星”的延迟感 (0.8秒)
     setTimeout(() => {
-      // 简单的字符串处理逻辑
-      // 去掉 https://github.com/ 前缀
-      let cleanPath = inputUrl.replace(/^(https?:\/\/)?(www\.)?github\.com\//, '');
-      
-      // 生成三种格式的结果
-      setResult({
-        raw: `${EDGE_DOMAIN}/${cleanPath}`,
-        clone: `git clone ${EDGE_DOMAIN}/${cleanPath}`,
-        wget: `wget ${EDGE_DOMAIN}/${cleanPath}`
-      });
-      setStatus('APPROVED');
-    }, 800);
+      try {
+        // 1. 清理 URL，移除 https://github.com/ 前缀
+        const cleanPath = inputUrl.replace(/^(https?:\/\/)?(www\.)?github\.com\//, '').replace(/\/$/, '');
+        const parts = cleanPath.split('/');
+        
+        // 简单校验
+        if (parts.length < 2) {
+            throw new Error("Invalid GitHub URL");
+        }
+
+        const user = parts[0];
+        const repo = parts[1];
+        const repoRoot = `${EDGE_DOMAIN}/${user}/${repo}`;
+
+        let cloneCmd = '';
+        let wgetCmd = '';
+        let rawLink = '';
+
+        // 2. 判断是“仓库首页”还是“具体文件”
+        // GitHub 文件路径通常包含 /blob/分支名/...
+        if (cleanPath.includes('/blob/')) {
+            // === 场景 A: 具体文件 ===
+            
+            // 构造 Raw 链接：将 /blob/ 替换为 /raw/
+            // 例如: user/repo/raw/main/README.md
+            // 注意: 访问 github.com/user/repo/raw/... 会触发 302 跳转到 raw.githubusercontent.com
+            // EdgeOne 默认会跟随这个跳转，从而实现加速
+            const rawPath = cleanPath.replace('/blob/', '/raw/');
+            const finalRawUrl = `${EDGE_DOMAIN}/${rawPath}`;
+            const fileName = parts[parts.length - 1];
+
+            cloneCmd = `git clone ${repoRoot}.git`; // Clone 依然拉取整个仓库
+            wgetCmd = `wget -O ${fileName} ${finalRawUrl}`; // Wget 下载该文件
+            rawLink = finalRawUrl; // Raw 显示文件直链
+
+        } else {
+            // === 场景 B: 仓库根目录 ===
+            
+            cloneCmd = `git clone ${repoRoot}.git`;
+            
+            // Wget 下载整个仓库的源码包 (ZIP)
+            // 使用 HEAD.zip 可以自动指向默认分支 (main 或 master)
+            wgetCmd = `wget -O ${repo}.zip ${repoRoot}/archive/HEAD.zip`;
+            
+            // 仓库没有所谓的“Raw链接”，这里显示加速后的仓库主页
+            rawLink = repoRoot;
+        }
+
+        setResult({
+            clone: cloneCmd,
+            wget: wgetCmd,
+            raw: rawLink
+        });
+        setStatus('APPROVED');
+
+      } catch (err) {
+        console.error(err);
+        setStatus('IDLE'); // 简单的错误处理：重置状态
+        alert("无效的 GitHub 链接，请检查格式 (Format error)");
+      }
+    }, 600);
   };
 
   return (
     <div className="w-full max-w-4xl mx-auto bg-white border-4 border-ink shadow-brutal p-6 md:p-10 relative overflow-hidden">
-        {/* 装饰：右上角的档案编号 */}
         <div className="absolute top-0 right-0 bg-ink text-white px-3 py-1 text-xs font-bold">
             REF: 2025-NEBULA-GIT
         </div>
 
-        {/* 标题区域 */}
         <div className="border-b-4 border-ink pb-6 mb-8 text-center md:text-left">
             <h2 className="font-serif text-3xl md:text-4xl font-bold uppercase tracking-tighter">
                 Acceleration Protocol
@@ -48,21 +93,19 @@ export default function ProtocolTerminal() {
             </p>
         </div>
 
-        {/* 步骤 1：输入表单 */}
         <form onSubmit={handleProcess} className="mb-12">
             <div className="flex flex-col space-y-2 mb-6">
                 <label className="text-xs font-bold uppercase tracking-widest text-safety-orange">
-                    // Target Resource Locator (输入目标链接)
+                    // Target Resource Locator (输入 GitHub 链接)
                 </label>
                 <div className="relative group">
                     <input 
                         type="text" 
                         value={inputUrl}
                         onChange={(e) => setInputUrl(e.target.value)}
-                        placeholder="https://github.com/username/repository"
+                        placeholder="https://github.com/username/repo"
                         className="w-full bg-paper border-2 border-ink p-4 text-lg md:text-xl font-mono focus:outline-none focus:bg-white focus:border-safety-orange transition-colors placeholder-gray-400"
                     />
-                    {/* 输入框装饰角标 */}
                     <div className="absolute bottom-0 right-0 w-3 h-3 bg-ink group-focus-within:bg-safety-orange"></div>
                 </div>
             </div>
@@ -87,10 +130,8 @@ export default function ProtocolTerminal() {
             </div>
         </form>
 
-        {/* 步骤 2：输出结果 (仅当审批通过时显示) */}
         {status === 'APPROVED' && result && (
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                {/* 装饰：虚线剪切线 */}
                 <div className="flex items-center space-x-4 mb-8 opacity-50">
                     <span className="text-xs">CUT HERE</span>
                     <div className="h-px bg-ink border-t border-dashed border-ink flex-grow"></div>
@@ -98,7 +139,6 @@ export default function ProtocolTerminal() {
                 </div>
 
                 <div className="relative">
-                    {/* 视觉特效：盖章 */}
                     <div className="absolute -top-6 -right-4 md:right-10 border-4 border-safety-orange text-safety-orange rounded-full w-32 h-32 flex items-center justify-center transform rotate-12 opacity-80 pointer-events-none z-10 mix-blend-multiply">
                         <div className="text-center">
                             <div className="text-xs font-bold border-b border-safety-orange">APPROVED</div>
@@ -113,9 +153,9 @@ export default function ProtocolTerminal() {
                     </h3>
 
                     <div className="space-y-6 relative z-20">
-                        <ResultCard label="GIT CLONE" command={result.clone} />
-                        <ResultCard label="WGET / cURL" command={result.wget} />
-                        <ResultCard label="RAW PROXY" command={result.raw} />
+                        <ResultCard label="GIT CLONE (仓库克隆)" command={result.clone} />
+                        <ResultCard label="WGET -O (下载源码/文件)" command={result.wget} />
+                        <ResultCard label="ACCELERATED LINK (原始链接)" command={result.raw} />
                     </div>
                 </div>
             </div>
@@ -124,7 +164,6 @@ export default function ProtocolTerminal() {
   );
 }
 
-// 子组件：单条结果卡片
 function ResultCard({ label, command }) {
     const [copied, setCopied] = useState(false);
     
