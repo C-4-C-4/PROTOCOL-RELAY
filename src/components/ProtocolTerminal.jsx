@@ -78,8 +78,7 @@ export default function ProtocolTerminal() {
 
   return (
     <div className="w-full max-w-4xl mx-auto bg-white border-4 border-ink shadow-brutal p-6 md:p-10 relative overflow-hidden">
-        {/* 修改点 1：已删除右上角的黑色 REF 块 */}
-
+        
         <div className="border-b-4 border-ink pb-6 mb-8 text-center md:text-left">
             <h2 className="font-serif text-3xl md:text-4xl font-bold uppercase tracking-tighter">
                 Acceleration Protocol
@@ -108,7 +107,6 @@ export default function ProtocolTerminal() {
 
             <div className="flex items-center justify-between flex-wrap gap-4">
                 <div className="text-xs hidden md:block opacity-50 uppercase">
-                    {/* 修改点 2：提示语更改 */}
                     * PROTOCOL-RELAY
                 </div>
                 <button 
@@ -122,7 +120,8 @@ export default function ProtocolTerminal() {
                             : 'bg-safety-orange text-white shadow-brutal-sm hover:bg-ink'}
                     `}
                 >
-                    {status === 'PROCESSING' ? '/// VERIFYING...' : 'INITIATE PROTOCOL // 提交申请'}
+                    {/* 修改点：这里更改了文字 */}
+                    {status === 'PROCESSING' ? '/// VERIFYING...' : 'INITIATE PROTOCOL // 转换'}
                 </button>
             </div>
         </form>
