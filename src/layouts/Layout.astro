@@ -1,0 +1,32 @@
+---
+interface Props {
+	title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<!doctype html>
+<html lang="zh-CN">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="description" content="Git Acceleration Protocol" />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		
+		<!-- 引入 Google Fonts -->
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+		
+		<title>{title}</title>
+	</head>
+	
+	<body class="bg-paper text-ink font-mono min-h-screen relative selection:bg-safety-orange selection:text-white">
+		<!-- 背景网格 -->
+		<div class="fixed inset-0 pointer-events-none z-0 opacity-40" 
+             style="background-image: linear-gradient(to right, #D1D1D1 1px, transparent 1px), linear-gradient(to bottom, #D1D1D1 1px, transparent 1px); background-size: 40px 40px;">
+        </div>
+		<slot />
+	</body>
+</html>

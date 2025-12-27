@@ -1,16 +1,32 @@
 ---
-
+import Layout from '../layouts/Layout.astro';
+import ProtocolTerminal from '../components/ProtocolTerminal.jsx';
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<Layout title="NEBULA . ICP // GIT ACCELERATOR">
+    
+    <!-- 顶部导航栏 / 状态栏 -->
+    <header class="fixed top-0 left-0 w-full z-50 bg-paper border-b-2 border-ink h-14 flex items-center justify-between px-6 shadow-sm">
+        <div class="flex items-center space-x-3">
+            <div class="w-3 h-3 bg-safety-orange rounded-full animate-pulse"></div>
+            <span class="font-bold tracking-widest text-sm">EDGEONE NETWORK</span>
+        </div>
+        <div class="font-serif font-bold text-lg hidden md:block">PROJECT NEBULA</div>
+        <!-- 右侧链接已删除 -->
+    </header>
+
+    <main class="relative z-10 pt-20 pb-20 px-4 min-h-screen flex flex-col items-center justify-center">
+        
+        <!-- 大标题区域已删除 -->
+
+        <!-- 核心交互组件 -->
+        <ProtocolTerminal client:load />
+
+    </main>
+
+    <!-- 底部版权栏 -->
+    <footer class="fixed bottom-0 left-0 w-full bg-paper border-t-2 border-ink py-2 text-center text-[10px] uppercase tracking-widest z-50">
+        Deployed on EdgeOne Pages // No Files Stored // Proxy Service Only
+    </footer>
+
+</Layout>
