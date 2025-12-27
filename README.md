@@ -66,7 +66,7 @@ npm install
 
 # 本地调试
 npm run dev
-
+```
 
 2. 前端部署 (EdgeOne Pages)
 将代码推送到你的 GitHub 仓库。
